@@ -18,18 +18,37 @@ internal static class Program
         var builtin = command[0];
 
         if (builtin == "exit")
-        {
             Exit(command);
-        }
         else if (builtin == "echo")
-        {
-            if (command.Length > 1)
-                Console.WriteLine(string.Join(' ', command[1..]));
-        }
+            Echo(command);
+        else if (builtin == "type")
+            Type(command);
         else
-        {
             Console.WriteLine($"{userInput}: command not found");
-        }
+    }
+
+    private static void Type(string[] command)
+    {
+        if (command.Length <= 1)
+            return;
+
+        var arguments = string.Join(' ', command[1..]);
+        if (arguments == "echo")
+            Console.WriteLine("echo is a shell builtin");
+        else if (arguments == "exit")
+            Console.WriteLine("exit is a shell builtin");
+        else if (arguments == "type")
+            Console.WriteLine("type is a shell builtin");
+        else if (arguments == "cat")
+            Console.WriteLine("cat is /bin/cat");
+        else
+            Console.WriteLine($"{arguments}: not found");
+    }
+
+    private static void Echo(string[] command)
+    {
+        if (command.Length > 1)
+            Console.WriteLine(string.Join(' ', command[1..]));
     }
 
     private static void Exit(string[] command)
