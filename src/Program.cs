@@ -1,7 +1,10 @@
 internal static class Program
 {
+    private static string[] _paths = [];
+
     public static void Main()
     {
+        _paths = Environment.GetEnvironmentVariable("PATH")?.Split(':') ?? [];
         while (true) Repl();
     }
 
@@ -39,10 +42,23 @@ internal static class Program
             Console.WriteLine("exit is a shell builtin");
         else if (arguments == "type")
             Console.WriteLine("type is a shell builtin");
-        else if (arguments == "cat")
-            Console.WriteLine("cat is /bin/cat");
+        else if (ExecutableInPath(arguments, out var location))
+            Console.WriteLine($"{arguments} is {location}");
         else
             Console.WriteLine($"{arguments}: not found");
+    }
+
+    private static bool ExecutableInPath(string arguments, out string location)
+    {
+        location = "";
+        foreach (var path in _paths)
+            if (File.Exists($"{path}/{arguments}"))
+            {
+                location = path + "/" + arguments;
+                return true;
+            }
+
+        return false;
     }
 
     private static void Echo(string[] command)
