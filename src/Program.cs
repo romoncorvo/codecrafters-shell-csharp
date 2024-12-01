@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 internal static class Program
 {
     private static string[] _paths = [];
@@ -26,6 +28,8 @@ internal static class Program
             Echo(command);
         else if (builtin == "type")
             Type(command);
+        else if (ExecutableInPath(builtin, out var location))
+            Process.Start(location, string.Join(' ', command[1..]));
         else
             Console.WriteLine($"{userInput}: command not found");
     }
