@@ -1,14 +1,13 @@
-using System.Net;
-using System.Net.Sockets;
-
-
-internal class Program
+internal static class Program
 {
     public static void Main(string[] args)
     {
-        Console.Write("$ ");
+        while (true)
+        {
+            Console.Write("$ ");
 
-        var command = Console.ReadLine();
-        Console.WriteLine($"{command}: command not found");
+            var command = Console.ReadLine();
+            Console.WriteLine($"{command}: command not found");
+        }
     }
 }
