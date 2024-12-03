@@ -3,7 +3,7 @@ using System.Diagnostics;
 internal static class Program
 {
     private static string[] _paths = [];
-    private static readonly string _workingDirectory = Environment.CurrentDirectory;
+    private static string _workingDirectory = Environment.CurrentDirectory;
 
     public static void Main()
     {
@@ -30,16 +30,26 @@ internal static class Program
         else if (builtin == "type")
             Type(command);
         else if (builtin == "pwd")
-            PresentWorkingDirectory();
+            PrintWorkingDirectory();
+        else if (builtin == "cd")
+            ChangeDirectory(command);
         else if (ExecutableInPath(builtin, out var location))
             Process.Start(location, string.Join(' ', command[1..])).WaitForExit();
         else
             Console.WriteLine($"{userInput}: command not found");
     }
 
-    private static void PresentWorkingDirectory()
+    private static void PrintWorkingDirectory()
     {
         Console.WriteLine($"{_workingDirectory}");
+    }
+
+    private static void ChangeDirectory(string[] command)
+    {
+        if (command.Length > 1 && Directory.Exists(command[1]))
+            _workingDirectory = command[1];
+        else
+            Console.WriteLine($"cd: {string.Join(' ', command[1..])}: No such file or directory");
     }
 
     private static void Type(string[] command)
@@ -56,6 +66,8 @@ internal static class Program
             Console.WriteLine("type is a shell builtin");
         else if (arguments == "pwd")
             Console.WriteLine("pwd is a shell builtin");
+        else if (arguments == "cd")
+            Console.WriteLine("cd is a shell builtin");
         else if (ExecutableInPath(arguments, out var location))
             Console.WriteLine($"{arguments} is {location}");
         else
