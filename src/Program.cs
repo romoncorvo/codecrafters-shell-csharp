@@ -46,10 +46,33 @@ internal static class Program
 
     private static void ChangeDirectory(string[] command)
     {
-        if (command.Length > 1 && Directory.Exists(command[1]))
+        if (command.Length > 1 && !command[1].StartsWith('.') && Directory.Exists(command[1]))
             _workingDirectory = command[1];
+        else if (command.Length > 1 && command[1].StartsWith('.') &&
+                 TryNavigateToRelativeDirectory(command[1], out var newDirectory))
+            _workingDirectory = newDirectory;
         else
             Console.WriteLine($"cd: {string.Join(' ', command[1..])}: No such file or directory");
+    }
+
+    private static bool TryNavigateToRelativeDirectory(string relativePath, out string newDirectory)
+    {
+        newDirectory = _workingDirectory.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+
+        var navigationPaths = relativePath.Split(Path.AltDirectorySeparatorChar);
+
+        foreach (var navigation in navigationPaths)
+        {
+            if (navigation is "" or ".")
+                continue;
+
+            if (navigation == "..")
+                newDirectory = newDirectory[..newDirectory.LastIndexOf(Path.AltDirectorySeparatorChar)];
+            else
+                newDirectory += $"{Path.AltDirectorySeparatorChar}{navigation}";
+        }
+
+        return Directory.Exists(newDirectory);
     }
 
     private static void Type(string[] command)
