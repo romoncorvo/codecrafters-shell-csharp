@@ -3,11 +3,11 @@ using System.Diagnostics;
 internal static class Program
 {
     private static string[] _paths = [];
-    private static string _workingDirectory = Environment.CurrentDirectory;
+    private static readonly string HomeDirectory = Environment.GetEnvironmentVariable("HOME")!;
 
     public static void Main()
     {
-        _paths = Environment.GetEnvironmentVariable("PATH")?.Split(':') ?? [];
+        _paths = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? [];
         while (true) Repl();
     }
 
@@ -41,23 +41,26 @@ internal static class Program
 
     private static void PrintWorkingDirectory()
     {
-        Console.WriteLine($"{_workingDirectory}");
+        Console.WriteLine($"{Environment.CurrentDirectory}");
     }
 
     private static void ChangeDirectory(string[] command)
     {
-        if (command.Length > 1 && !command[1].StartsWith('.') && Directory.Exists(command[1]))
-            _workingDirectory = command[1];
-        else if (command.Length > 1 && command[1].StartsWith('.') &&
-                 TryNavigateToRelativeDirectory(command[1], out var newDirectory))
-            _workingDirectory = newDirectory;
+        if (command.Length > 1 && command[1].StartsWith('.') &&
+            TryNavigateToRelativeDirectory(command[1], out var newDirectory))
+            Directory.SetCurrentDirectory(newDirectory);
+        else if (command.Length > 1 && command[1].StartsWith('~'))
+            Directory.SetCurrentDirectory(HomeDirectory);
+        else if (command.Length > 1 && Directory.Exists(command[1]))
+            Directory.SetCurrentDirectory(command[1]);
         else
             Console.WriteLine($"cd: {string.Join(' ', command[1..])}: No such file or directory");
     }
 
     private static bool TryNavigateToRelativeDirectory(string relativePath, out string newDirectory)
     {
-        newDirectory = _workingDirectory.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+        newDirectory =
+            Environment.CurrentDirectory.Replace(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
 
         var navigationPaths = relativePath.Split(Path.AltDirectorySeparatorChar);
 
