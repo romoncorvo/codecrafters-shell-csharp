@@ -3,6 +3,7 @@ using System.Diagnostics;
 internal static class Program
 {
     private static string[] _paths = [];
+    private static readonly string _workingDirectory = Environment.CurrentDirectory;
 
     public static void Main()
     {
@@ -28,10 +29,17 @@ internal static class Program
             Echo(command);
         else if (builtin == "type")
             Type(command);
+        else if (builtin == "pwd")
+            PresentWorkingDirectory();
         else if (ExecutableInPath(builtin, out var location))
-            Process.Start(location, string.Join(' ', command[1..]));
+            Process.Start(location, string.Join(' ', command[1..])).WaitForExit();
         else
             Console.WriteLine($"{userInput}: command not found");
+    }
+
+    private static void PresentWorkingDirectory()
+    {
+        Console.WriteLine($"{_workingDirectory}");
     }
 
     private static void Type(string[] command)
@@ -46,6 +54,8 @@ internal static class Program
             Console.WriteLine("exit is a shell builtin");
         else if (arguments == "type")
             Console.WriteLine("type is a shell builtin");
+        else if (arguments == "pwd")
+            Console.WriteLine("pwd is a shell builtin");
         else if (ExecutableInPath(arguments, out var location))
             Console.WriteLine($"{arguments} is {location}");
         else
