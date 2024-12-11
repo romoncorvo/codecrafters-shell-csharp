@@ -1,6 +1,7 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
-internal static class Program
+internal static partial class Program
 {
     private static string[] _paths = [];
     private static readonly string HomeDirectory = Environment.GetEnvironmentVariable("HOME")!;
@@ -20,11 +21,19 @@ internal static class Program
         if (userInput == null)
             return;
 
-        var command = userInput.Split(' ');
+        var quotedCommands = SingleQuoteCapture()
+            .Matches(userInput)
+            .Select(x => x.Captures[0].Value.Trim('\''))
+            .ToArray();
+
+        var command = quotedCommands.Length > 0
+            ? new[] { userInput.Split(' ')[0] }.Concat(quotedCommands).ToArray()
+            : userInput.Split(' ').Where(x => x != "").ToArray();
         var builtin = command[0];
 
         if (builtin == "exit")
             Exit(command);
+
         else if (builtin == "echo")
             Echo(command);
         else if (builtin == "type")
@@ -34,7 +43,11 @@ internal static class Program
         else if (builtin == "cd")
             ChangeDirectory(command);
         else if (ExecutableInPath(builtin, out var location))
-            Process.Start(location, string.Join(' ', command[1..])).WaitForExit();
+            if (builtin == "cat")
+                foreach (var argument in command[1..])
+                    Process.Start(location, "\"" + argument + "\"").WaitForExit();
+            else
+                Process.Start(location, string.Join(' ', command[1..])).WaitForExit();
         else
             Console.WriteLine($"{userInput}: command not found");
     }
@@ -126,4 +139,7 @@ internal static class Program
 
         Environment.Exit(0);
     }
+
+    [GeneratedRegex("'([^']*)'")]
+    private static partial Regex SingleQuoteCapture();
 }
