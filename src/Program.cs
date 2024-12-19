@@ -35,8 +35,8 @@ internal static partial class Program
                 .Select(x =>
                 {
                     return new[] { "cat", "echo" }.Contains(builtin)
-                        ? x
-                        : EscapeCharacter().Replace(x, match => match.Groups[1].Value);
+                        ? EscapeCharacter().Replace(x, match => match.Groups[1].Value)
+                        : x;
                 })
                 .ToArray();
 
