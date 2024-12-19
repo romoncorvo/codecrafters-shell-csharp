@@ -32,14 +32,15 @@ internal static partial class Program
             ? new[] { builtin }.Concat(quotedCommands).ToArray()
             : userInput.Split(' ')
                 .Where(x => x != "")
-                .Select(x => EscapeCharacter().Replace(x, match => match.Groups[1].Value))
                 .ToArray();
 
         if (builtin == "exit")
             Exit(command);
 
         else if (builtin == "echo")
-            Echo(command);
+            Echo(command
+                .Select(x => EscapeCharacter().Replace(x, match => match.Groups[1].Value))
+                .ToArray());
         else if (builtin == "type")
             Type(command);
         else if (builtin == "pwd")
@@ -49,7 +50,7 @@ internal static partial class Program
         else if (ExecutableInPath(builtin, out var location))
             if (builtin == "cat")
                 foreach (var argument in command[1..])
-                    Process.Start(location, "\"" + argument + "\"").WaitForExit();
+                    Process.Start(location, "\"" + EscapeCharacter().Replace(argument, match => match.Groups[1].Value).ToArray() + "\"").WaitForExit();
             else
                 Process.Start(location, string.Join(' ', command[1..])).WaitForExit();
         else
