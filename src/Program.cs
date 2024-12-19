@@ -21,15 +21,19 @@ internal static partial class Program
         if (userInput == null)
             return;
 
+        var builtin = userInput.Split(' ')[0];
+
         var quotedCommands = QuoteCapture()
             .Matches(userInput)
             .Select(x => x.Captures[0].Value.Trim('\'').Trim('\"'))
             .ToArray();
 
         var command = quotedCommands.Length > 0
-            ? new[] { userInput.Split(' ')[0] }.Concat(quotedCommands).ToArray()
-            : userInput.Split(' ').Where(x => x != "").ToArray();
-        var builtin = command[0];
+            ? new[] { builtin }.Concat(quotedCommands).ToArray()
+            : userInput.Split(' ')
+                .Where(x => x != "")
+                .Select(x => EscapeCharacter().Replace(x, match => match.Groups[1].Value))
+                .ToArray();
 
         if (builtin == "exit")
             Exit(command);
@@ -142,4 +146,7 @@ internal static partial class Program
 
     [GeneratedRegex("'([^']*)'|\"([^\"]*)\"")]
     private static partial Regex QuoteCapture();
+
+    [GeneratedRegex(@"\\(.?)")]
+    private static partial Regex EscapeCharacter();
 }
