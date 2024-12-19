@@ -21,9 +21,9 @@ internal static partial class Program
         if (userInput == null)
             return;
 
-        var quotedCommands = SingleQuoteCapture()
+        var quotedCommands = QuoteCapture()
             .Matches(userInput)
-            .Select(x => x.Captures[0].Value.Trim('\''))
+            .Select(x => x.Captures[0].Value.Trim('\'').Trim('\"'))
             .ToArray();
 
         var command = quotedCommands.Length > 0
@@ -140,6 +140,6 @@ internal static partial class Program
         Environment.Exit(0);
     }
 
-    [GeneratedRegex("'([^']*)'")]
-    private static partial Regex SingleQuoteCapture();
+    [GeneratedRegex("'([^']*)'|\"([^\"]*)\"")]
+    private static partial Regex QuoteCapture();
 }
